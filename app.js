@@ -1,4 +1,179 @@
-const { useState, useEffect, useMemo } = React;
+<div className="flex items-start justify-between gap-2 mb-2">
+                          <h3 className="font-semibold text-slate-900 dark:text-slate-100 leading-tight">
+                            {task.title}
+                          </h3>
+                          <div 
+                            className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
+                            style={{
+                              backgroundColor: PROFESSIONAL_ACCENTS[PRIORITY_CONFIG[task.priority].color][100],
+                              color: PROFESSIONAL_ACCENTS[PRIORITY_CONFIG[task.priority].color][700]
+                            }}
+                          >
+                            {task.priority}
+                          </div>
+                        </div>
+
+                        {task.notes && (
+                          <p className="text-sm text-slate-600 dark:text-slate-400 mb-3 line-clamp-2">
+                            {task.notes}
+                          </p>
+                        )}
+
+                        <div className="flex flex-wrap items-center gap-2 mb-3">
+                          {task.deadline && (
+                            <div className={classNames(
+                              "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium",
+                              isOverdue(task.deadline) 
+                                ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
+                                : isToday(task.deadline)
+                                ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
+                                : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
+                            )}>
+                              <CalendarDays className="h-3 w-3" />
+                              {new Date(task.deadline).toLocaleDateString()}
+                            </div>
+                          )}
+                          
+                          <div 
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
+                            style={{
+                              backgroundColor: PROFESSIONAL_ACCENTS[PROFESSIONAL_TAGS.find(t => t.name === task.tag)?.color || 'azure'][100],
+                              color: PROFESSIONAL_ACCENTS[PROFESSIONAL_TAGS.find(t => t.name === task.tag)?.color || 'azure'][700]
+                            }}
+                          >
+                            {task.tag}
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button 
+                            onClick={() => startEdit(task)}
+                            className="text-slate-600 hover:text-blue-600 p-1 rounded transition-colors"
+                          >
+                            <Edit2 className="h-4 w-4" />
+                          </button>
+                          
+                          <button 
+                            onClick={() => moveTask(task.id, tab === "Personal" ? "Work" : "Personal")}
+                            className="text-slate-600 hover:text-purple-600 p-1 rounded transition-colors"
+                          >
+                            <ArrowRightLeft className="h-4 w-4" />
+                          </button>
+                          
+                          <button 
+                            onClick={() => removeTask(task.id)}
+                            className="text-slate-600 hover:text-red-600 p-1 rounded transition-colors ml-auto"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+            
+            {visibleActive.length === 0 && (
+              <div className="md:col-span-2 lg:col-span-3">
+                <div className="text-center py-12 text-slate-500 dark:text-slate-400">
+                  <Target className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                  <p className="text-lg font-medium mb-1">No tasks found</p>
+                  <p className="text-sm">Create your first task to get started</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* Completed Tasks */}
+        {completedTasks.length > 0 && (
+          <section>
+            <button
+              onClick={() => setShowCompleted(!showCompleted)}
+              className="w-full flex items-center justify-between p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-md ring-1 ring-slate-200 dark:ring-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all mb-4"
+            >
+              <div className="flex items-center gap-3">
+                <FolderCheck className="h-5 w-5" style={{ color: accentColors[600] }} />
+                <span className="font-semibold">Completed Tasks</span>
+                <span className="text-sm text-slate-500 dark:text-slate-400">
+                  {completedTasks.length}
+                </span>
+              </div>
+              <span className="text-sm text-slate-500 dark:text-slate-400">
+                {showCompleted ? 'Hide' : 'Show'}
+              </span>
+            </button>
+
+            <AnimatePresence>
+              {showCompleted && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="overflow-hidden"
+                >
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {completedTasks.map(task => (
+                      <div
+                        key={task.id}
+                        className="rounded-2xl bg-white dark:bg-slate-800 shadow-md ring-1 ring-slate-200 dark:ring-slate-700 p-5 opacity-75"
+                      >
+                        <div className="flex items-start gap-3">
+                          <CheckCircle2 className="h-5 w-5 mt-1 shrink-0" style={{ color: accentColors[600] }} />
+                          <div className="flex-1">
+                            <h3 className="font-semibold text-slate-900 dark:text-slate-100 line-through">
+                              {task.title}
+                            </h3>
+                            {task.notes && (
+                              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                                {task.notes}
+                              </p>
+                            )}
+                            <div className="flex items-center gap-2 mt-3">
+                              <button
+                                onClick={() => toggleComplete(task.id)}
+                                className="text-xs text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+                              >
+                                Restore
+                              </button>
+                              <button
+                                onClick={() => removeTask(task.id)}
+                                className="text-xs text-red-600 hover:text-red-700"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </section>
+        )}
+
+        {/* Footer */}
+        <footer className="mt-12 text-center">
+          <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white dark:bg-slate-800 shadow-sm ring-1 ring-slate-200 dark:ring-slate-700">
+            <div className="w-6 h-6 rounded-lg bg-blue-600 flex items-center justify-center relative overflow-hidden">
+              <div className="absolute bottom-0 left-1 w-1.5 h-1.5 bg-blue-600 transform rotate-45 translate-y-0.5"></div>
+              <span className="relative text-white font-bold text-xs">Ai</span>
+            </div>
+            <span className="text-xs text-slate-600 dark:text-slate-400">
+              Powered by <span className="font-medium text-blue-600 dark:text-blue-400">Ai Concierge</span>
+            </span>
+          </div>
+        </footer>
+      </div>
+    </div>
+  );
+}
+
+// Render the app
+ReactDOM.render(<TaskFlowApp />, document.getElementById('root'));const { useState, useEffect, useMemo } = React;
 const { motion, AnimatePresence } = Motion;
 const { 
   Plus, Trash2, CalendarDays, Clock, CheckCircle2, Circle, Search, Filter,
