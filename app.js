@@ -1,16 +1,8 @@
-Great! Now let's add the main app code.
-File 2: Create app.js
-
-Click "Add file" → "Create new file"
-Name it: app.js
-Copy and paste this code:
-
-javascriptconst { useState, useEffect, useMemo } = React;
+const { useState, useEffect, useMemo } = React;
 const { motion, AnimatePresence } = Motion;
 const { 
   Plus, Trash2, CalendarDays, Clock, CheckCircle2, Circle, Search, Filter,
-  Edit2, X, FolderCheck, ArrowRightLeft, Sun, Moon, Monitor, Crown, Sparkles,
-  TrendingUp, Zap, Star, BarChart3, Target
+  Edit2, X, FolderCheck, ArrowRightLeft, Sun, Moon, Monitor, Target
 } = lucide;
 
 const PROFESSIONAL_ACCENTS = {
@@ -69,7 +61,7 @@ function isOverdue(dateStr) {
 }
 
 function TaskFlowApp() {
-  // Demo data with localStorage
+  // Sample data with localStorage
   const [store, setStore] = useState(() => {
     try {
       const saved = localStorage.getItem('taskflow-data');
@@ -114,30 +106,15 @@ function TaskFlowApp() {
     }
   });
 
-  // Save to localStorage whenever store changes
   useEffect(() => {
     try {
       localStorage.setItem('taskflow-data', JSON.stringify(store));
-    } catch (error) {
-      console.warn('Could not save to localStorage:', error);
-    }
+    } catch {}
   }, [store]);
 
   const [tab, setTab] = useState("Personal");
-  const [accent, setAccent] = useState(() => {
-    try {
-      return localStorage.getItem('taskflow-accent') || "azure";
-    } catch {
-      return "azure";
-    }
-  });
-  const [mode, setMode] = useState(() => {
-    try {
-      return localStorage.getItem('taskflow-theme') || "system";
-    } catch {
-      return "system";
-    }
-  });
+  const [accent, setAccent] = useState("azure");
+  const [mode, setMode] = useState("system");
   const [isDark, setIsDark] = useState(false);
   
   const [draft, setDraft] = useState({
@@ -149,54 +126,31 @@ function TaskFlowApp() {
   const [filter, setFilter] = useState("All");
   const [showCompleted, setShowCompleted] = useState(false);
 
-  // Save preferences
-  useEffect(() => {
-    try {
-      localStorage.setItem('taskflow-accent', accent);
-    } catch {}
-  }, [accent]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('taskflow-theme', mode);
-    } catch {}
-  }, [mode]);
-
   // Theme management
   useEffect(() => {
-    let systemDark = false;
-    try {
-      const mq = window.matchMedia('(prefers-color-scheme: dark)');
-      systemDark = mq?.matches || false;
-      
-      const updateTheme = () => {
-        const newSystemDark = mq?.matches || false;
-        if (mode === 'system') {
-          setIsDark(newSystemDark);
+    const updateTheme = () => {
+      try {
+        const mq = window.matchMedia('(prefers-color-scheme: dark)');
+        const systemDark = mq?.matches || false;
+        
+        if (mode === 'dark') {
+          setIsDark(true);
+        } else if (mode === 'light') {
+          setIsDark(false);
+        } else {
+          setIsDark(systemDark);
         }
-      };
-      
-      if (mode === 'system' && mq) {
-        mq.addEventListener('change', updateTheme);
-        return () => mq.removeEventListener('change', updateTheme);
+      } catch {
+        setIsDark(false);
       }
-    } catch (error) {
-      systemDark = false;
-    }
-    
-    if (mode === 'dark') {
-      setIsDark(true);
-    } else if (mode === 'light') {
-      setIsDark(false);
-    } else {
-      setIsDark(systemDark);
-    }
+    };
+    updateTheme();
   }, [mode]);
 
   useEffect(() => {
     try {
       document.documentElement.classList.toggle('dark', isDark);
-    } catch (error) {}
+    } catch {}
   }, [isDark]);
 
   const tasks = tab === "Personal" ? store.personal : store.work;
@@ -318,118 +272,319 @@ function TaskFlowApp() {
     ...PROFESSIONAL_TAGS.map(t => `Tag:${t.name}`)
   ];
 
-  return React.createElement("div", {
-    style: accentStyle,
-    className: classNames(
-      "min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 text-slate-900 dark:text-slate-100",
-      isDark && "dark"
-    )
-  },
-    React.createElement("div", { className: "mx-auto max-w-7xl px-4 py-6" },
-      // Header
-      React.createElement(motion.header, {
-        initial: { opacity: 0, y: -20 },
-        animate: { opacity: 1, y: 0 },
-        className: "sticky top-0 z-20 -mx-2 mb-8 px-2"
-      },
-        React.createElement("div", { className: "rounded-2xl bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl shadow-xl ring-1 ring-slate-200/50 dark:ring-slate-700/50" },
-          React.createElement("div", { className: "flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-6 py-4" },
-            React.createElement("div", { className: "flex items-center gap-4" },
-              React.createElement("div", { className: "w-12 h-12 rounded-2xl bg-blue-600 shadow-lg flex items-center justify-center relative" },
-                React.createElement("div", { className: "w-10 h-8 bg-blue-600 rounded-2xl flex items-center justify-center relative" },
-                  React.createElement("span", { className: "text-white font-bold text-sm" }, "Ai")
-                ),
-                React.createElement("div", { className: "absolute -bottom-1 left-2 w-2 h-2 bg-blue-600 transform rotate-45" })
-              ),
-              React.createElement("div", null,
-                React.createElement("h1", { className: "text-2xl font-bold tracking-tight" },
-                  "TaskFlow ",
-                  React.createElement("span", { className: "ml-2 text-lg font-normal text-slate-600 dark:text-slate-400" }, "by"),
-                  React.createElement("span", { className: "ml-1 text-blue-600 dark:text-blue-400 font-semibold" }, "Ai Concierge")
-                ),
-                React.createElement("p", { className: "text-sm text-slate-600 dark:text-slate-400" }, "Professional task management platform")
-              )
-            ),
-            // Theme and accent controls
-            React.createElement("div", { className: "flex items-center gap-4" },
-              React.createElement("div", { className: "flex items-center gap-2" },
-                ...Object.entries(PROFESSIONAL_ACCENTS).map(([key, colors]) =>
-                  React.createElement("button", {
-                    key: key,
-                    onClick: () => setAccent(key),
-                    className: classNames(
-                      "w-6 h-6 rounded-full ring-2 ring-offset-2 ring-offset-white dark:ring-offset-slate-800 transition-all hover:scale-110",
-                      accent === key ? "ring-slate-400" : "ring-transparent"
-                    ),
-                    style: { background: colors.gradient },
-                    title: `${key} theme`
-                  })
-                )
-              ),
-              React.createElement("div", { className: "flex items-center rounded-lg bg-slate-100 dark:bg-slate-700 p-1" },
-                [
-                  { key: 'light', label: 'Light', Icon: Sun },
-                  { key: 'dark', label: 'Dark', Icon: Moon },
-                  { key: 'system', label: 'Auto', Icon: Monitor }
-                ].map(({ key, label, Icon }) =>
-                  React.createElement("button", {
-                    key: key,
-                    onClick: () => setMode(key),
-                    className: classNames(
-                      "flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all",
-                      mode === key 
-                        ? "bg-white dark:bg-slate-600 shadow-sm text-slate-900 dark:text-slate-100"
-                        : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
-                    )
-                  },
-                    React.createElement(Icon, { className: "h-4 w-4" }),
-                    React.createElement("span", { className: "hidden sm:inline" }, label)
-                  )
-                )
-              )
-            )
-          ),
-          // Tabs
-          React.createElement("div", { className: "px-6 pb-4" },
-            React.createElement("div", { className: "flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-700 rounded-xl max-w-fit" },
-              ["Personal", "Work"].map(name => {
-                const active = tab === name;
-                const count = name === "Personal" ? tabCounts.personal : tabCounts.work;
-                return React.createElement("button", {
-                  key: name,
-                  onClick: () => setTab(name),
-                  className: classNames(
-                    "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
-                    active 
-                      ? "bg-white dark:bg-slate-600 shadow-sm text-slate-900 dark:text-slate-100"
-                      : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
-                  )
-                },
-                  name,
-                  React.createElement("span", {
-                    className: classNames(
-                      "inline-flex items-center justify-center w-5 h-5 text-xs rounded-full",
-                      active 
-                        ? "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300"
-                        : "bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-400"
-                    )
-                  }, count)
-                );
-              })
-            )
-          )
-        )
-      ),
+  return (
+    <div 
+      style={accentStyle} 
+      className={classNames(
+        "min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 text-slate-900 dark:text-slate-100",
+        isDark && "dark"
+      )}
+    >
+      <div className="mx-auto max-w-7xl px-4 py-6">
+        {/* Header */}
+        <motion.header 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="sticky top-0 z-20 -mx-2 mb-8 px-2"
+        >
+          <div className="rounded-2xl bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl shadow-xl ring-1 ring-slate-200/50 dark:ring-slate-700/50">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-6 py-4">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-blue-600 shadow-lg flex items-center justify-center relative">
+                  <div className="w-10 h-8 bg-blue-600 rounded-2xl flex items-center justify-center relative">
+                    <span className="text-white font-bold text-sm">Ai</span>
+                  </div>
+                  <div className="absolute -bottom-1 left-2 w-2 h-2 bg-blue-600 transform rotate-45"></div>
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold tracking-tight">
+                    TaskFlow 
+                    <span className="ml-2 text-lg font-normal text-slate-600 dark:text-slate-400">by</span>
+                    <span className="ml-1 text-blue-600 dark:text-blue-400 font-semibold">Ai Concierge</span>
+                  </h1>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                    Professional task management platform
+                  </p>
+                </div>
+              </div>
 
-      // Rest of the app continues...
-      // [The rest of the component would continue but I'll stop here due to length]
-      
-      React.createElement("div", { className: "text-center py-8 text-slate-500" },
-        "TaskFlow PWA is loading..."
-      )
-    )
-  );
-}
+              <div className="flex items-center gap-4">
+                {/* Accent colors */}
+                <div className="flex items-center gap-2">
+                  {Object.entries(PROFESSIONAL_ACCENTS).map(([key, colors]) => (
+                    <button
+                      key={key}
+                      onClick={() => setAccent(key)}
+                      className={classNames(
+                        "w-6 h-6 rounded-full ring-2 ring-offset-2 ring-offset-white dark:ring-offset-slate-800 transition-all hover:scale-110",
+                        accent === key ? "ring-slate-400" : "ring-transparent"
+                      )}
+                      style={{ background: colors.gradient }}
+                      title={`${key} theme`}
+                    />
+                  ))}
+                </div>
 
-// Render the app
-ReactDOM.render(React.createElement(TaskFlowApp), document.getElementById('root'));
+                {/* Theme switcher */}
+                <div className="flex items-center rounded-lg bg-slate-100 dark:bg-slate-700 p-1">
+                  {[
+                    { key: 'light', label: 'Light', Icon: Sun },
+                    { key: 'dark', label: 'Dark', Icon: Moon },
+                    { key: 'system', label: 'Auto', Icon: Monitor }
+                  ].map(({ key, label, Icon }) => (
+                    <button
+                      key={key}
+                      onClick={() => setMode(key)}
+                      className={classNames(
+                        "flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all",
+                        mode === key 
+                          ? "bg-white dark:bg-slate-600 shadow-sm text-slate-900 dark:text-slate-100"
+                          : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
+                      )}
+                    >
+                      <Icon className="h-4 w-4" />
+                      <span className="hidden sm:inline">{label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Tabs */}
+            <div className="px-6 pb-4">
+              <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-700 rounded-xl max-w-fit">
+                {["Personal", "Work"].map((name) => {
+                  const active = tab === name;
+                  const count = name === "Personal" ? tabCounts.personal : tabCounts.work;
+                  return (
+                    <button
+                      key={name}
+                      onClick={() => setTab(name)}
+                      className={classNames(
+                        "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
+                        active 
+                          ? "bg-white dark:bg-slate-600 shadow-sm text-slate-900 dark:text-slate-100"
+                          : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
+                      )}
+                    >
+                      {name}
+                      <span className={classNames(
+                        "inline-flex items-center justify-center w-5 h-5 text-xs rounded-full",
+                        active 
+                          ? "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300"
+                          : "bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-400"
+                      )}>
+                        {count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </motion.header>
+
+        {/* Progress Cards */}
+        <div className="grid sm:grid-cols-2 gap-4 mb-8">
+          {[
+            { label: 'Active Tasks', count: activeTasks.length, icon: Target },
+            { label: 'Completed', count: completedTasks.length, icon: CheckCircle2 }
+          ].map(({ label, count, icon: Icon }) => (
+            <motion.div 
+              key={label}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="rounded-2xl bg-white dark:bg-slate-800 shadow-lg ring-1 ring-slate-200 dark:ring-slate-700 p-6"
+            >
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-xl" style={{ backgroundColor: accentColors[100] }}>
+                  <Icon className="h-6 w-6" style={{ color: accentColors[600] }} />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-slate-900 dark:text-slate-100">{label}</h3>
+                  <p className="text-2xl font-bold" style={{ color: accentColors[600] }}>{count}</p>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Task Form */}
+        <motion.form
+          layout
+          onSubmit={saveTask}
+          className="mb-8 rounded-2xl bg-white dark:bg-slate-800 shadow-xl ring-1 ring-slate-200 dark:ring-slate-700 p-6"
+        >
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+            <div className="lg:col-span-5">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                Task Title
+              </label>
+              <input
+                className="w-full rounded-xl border-slate-300 dark:border-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-sm px-4 py-3 bg-white dark:bg-slate-900 transition-all"
+                placeholder={`e.g., ${tab === "Personal" ? "Plan weekend getaway" : "Prepare quarterly presentation"}`}
+                value={draft.title}
+                onChange={(e) => setDraft({ ...draft, title: e.target.value })}
+              />
+            </div>
+            
+            <div className="lg:col-span-3">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                Due Date
+              </label>
+              <input
+                type="datetime-local"
+                className="w-full rounded-xl border-slate-300 dark:border-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-sm px-4 py-3 bg-white dark:bg-slate-900"
+                value={draft.deadline}
+                onChange={(e) => setDraft({ ...draft, deadline: e.target.value })}
+              />
+            </div>
+
+            <div className="lg:col-span-2">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                Priority
+              </label>
+              <select
+                className="w-full rounded-xl border-slate-300 dark:border-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-sm px-4 py-3 bg-white dark:bg-slate-900"
+                value={draft.priority}
+                onChange={(e) => setDraft({ ...draft, priority: e.target.value })}
+              >
+                {Object.keys(PRIORITY_CONFIG).map(p => (
+                  <option key={p}>{p}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="lg:col-span-2">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                Category
+              </label>
+              <select
+                className="w-full rounded-xl border-slate-300 dark:border-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-sm px-4 py-3 bg-white dark:bg-slate-900"
+                value={draft.tag}
+                onChange={(e) => setDraft({ ...draft, tag: e.target.value })}
+              >
+                {PROFESSIONAL_TAGS.map(t => (
+                  <option key={t.name}>{t.name}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="lg:col-span-12">
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                Notes
+              </label>
+              <textarea
+                rows={3}
+                className="w-full rounded-xl border-slate-300 dark:border-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-sm px-4 py-3 bg-white dark:bg-slate-900"
+                placeholder="Add any additional details..."
+                value={draft.notes}
+                onChange={(e) => setDraft({ ...draft, notes: e.target.value })}
+              />
+            </div>
+          </div>
+
+          <div className="mt-6 flex items-center gap-3">
+            <button
+              type="submit"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-medium shadow-lg hover:shadow-xl active:scale-95 transform transition-all duration-200"
+              style={{ background: accentColors.gradient }}
+            >
+              {editingId ? (
+                <>
+                  <Edit2 className="h-4 w-4" />
+                  Update Task
+                </>
+              ) : (
+                <>
+                  <Plus className="h-4 w-4" />
+                  Add Task
+                </>
+              )}
+            </button>
+            
+            {editingId && (
+              <button
+                type="button"
+                onClick={resetDraft}
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 ring-1 ring-slate-300 dark:ring-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
+              >
+                <X className="h-4 w-4" />
+                Cancel
+              </button>
+            )}
+          </div>
+        </motion.form>
+
+        {/* Search and Filters */}
+        <div className="mb-6 flex flex-col sm:flex-row gap-4">
+          <div className="flex-1 relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <input
+              className="w-full pl-10 pr-4 py-3 rounded-xl border-slate-300 dark:border-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 bg-white dark:bg-slate-900"
+              placeholder="Search tasks..."
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+            />
+          </div>
+          <div className="flex items-center gap-2 overflow-x-auto">
+            <Filter className="h-4 w-4 text-slate-400 shrink-0" />
+            {filters.map(f => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={classNames(
+                  "px-4 py-2 text-sm rounded-full whitespace-nowrap transition-all",
+                  filter === f
+                    ? "text-white shadow-lg"
+                    : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 ring-1 ring-slate-200 dark:ring-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700"
+                )}
+                style={filter === f ? { background: accentColors.gradient } : undefined}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Tasks */}
+        <section className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
+              Active Tasks
+            </h2>
+            <span className="text-sm text-slate-600 dark:text-slate-400">
+              {visibleActive.length} of {activeTasks.length} tasks
+            </span>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <AnimatePresence mode="popLayout">
+              {visibleActive.map(task => (
+                <motion.div
+                  key={task.id}
+                  layout
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  whileHover={{ y: -2 }}
+                  className="group relative rounded-2xl bg-white dark:bg-slate-800 shadow-md hover:shadow-lg transition-all duration-300 ring-1 ring-slate-200 dark:ring-slate-700 overflow-hidden"
+                >
+                  <div 
+                    className="absolute top-0 left-0 right-0 h-1"
+                    style={{ 
+                      background: PROFESSIONAL_ACCENTS[PRIORITY_CONFIG[task.priority].color].gradient 
+                    }}
+                  />
+
+                  <div className="p-5">
+                    <div className="flex items-start gap-3">
+                      <button 
+                        onClick={() => toggleComplete(task.id)} 
+                        className="mt-1 shrink-0 transition-transform hover:scale-110"
+                      >
+                        <Circle className="h-5 w-5 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300" />
+                      </button>
+                      
+                      <div className="flex-1 min-w-0">
+                        <div
