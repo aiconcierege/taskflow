@@ -1,169 +1,114 @@
-<div className="flex items-start justify-between gap-2 mb-2">
-                          <h3 className="font-semibold text-slate-900 dark:text-slate-100 leading-tight">
-                            {task.title}
-                          </h3>
-                          <div 
-                            className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
-                            style={{
-                              backgroundColor: PROFESSIONAL_ACCENTS[PRIORITY_CONFIG[task.priority].color][100],
-                              color: PROFESSIONAL_ACCENTS[PRIORITY_CONFIG[task.priority].color][700]
-                            }}
-                          >
-                            {task.priority}
-                          </div>
-                        </div>
+const { useState, useEffect } = React;
 
-                        {task.notes && (
-                          <p className="text-sm text-slate-600 dark:text-slate-400 mb-3 line-clamp-2">
-                            {task.notes}
-                          </p>
-                        )}
+function TaskFlowApp() {
+  const [tasks, setTasks] = useState([
+    {
+      id: 1,
+      title: "Welcome to TaskFlow!",
+      completed: false,
+      priority: "High",
+      notes: "This is your first task"
+    }
+  ]);
+  
+  const [newTask, setNewTask] = useState("");
 
-                        <div className="flex flex-wrap items-center gap-2 mb-3">
-                          {task.deadline && (
-                            <div className={classNames(
-                              "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium",
-                              isOverdue(task.deadline) 
-                                ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"
-                                : isToday(task.deadline)
-                                ? "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300"
-                                : "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300"
-                            )}>
-                              <CalendarDays className="h-3 w-3" />
-                              {new Date(task.deadline).toLocaleDateString()}
-                            </div>
-                          )}
-                          
-                          <div 
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium"
-                            style={{
-                              backgroundColor: PROFESSIONAL_ACCENTS[PROFESSIONAL_TAGS.find(t => t.name === task.tag)?.color || 'azure'][100],
-                              color: PROFESSIONAL_ACCENTS[PROFESSIONAL_TAGS.find(t => t.name === task.tag)?.color || 'azure'][700]
-                            }}
-                          >
-                            {task.tag}
-                          </div>
-                        </div>
+  function addTask() {
+    if (newTask.trim()) {
+      setTasks([...tasks, {
+        id: Date.now(),
+        title: newTask,
+        completed: false,
+        priority: "Medium",
+        notes: ""
+      }]);
+      setNewTask("");
+    }
+  }
 
-                        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button 
-                            onClick={() => startEdit(task)}
-                            className="text-slate-600 hover:text-blue-600 p-1 rounded transition-colors"
-                          >
-                            <Edit2 className="h-4 w-4" />
-                          </button>
-                          
-                          <button 
-                            onClick={() => moveTask(task.id, tab === "Personal" ? "Work" : "Personal")}
-                            className="text-slate-600 hover:text-purple-600 p-1 rounded transition-colors"
-                          >
-                            <ArrowRightLeft className="h-4 w-4" />
-                          </button>
-                          
-                          <button 
-                            onClick={() => removeTask(task.id)}
-                            className="text-slate-600 hover:text-red-600 p-1 rounded transition-colors ml-auto"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-            
-            {visibleActive.length === 0 && (
-              <div className="md:col-span-2 lg:col-span-3">
-                <div className="text-center py-12 text-slate-500 dark:text-slate-400">
-                  <Target className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                  <p className="text-lg font-medium mb-1">No tasks found</p>
-                  <p className="text-sm">Create your first task to get started</p>
-                </div>
-              </div>
-            )}
+  function toggleTask(id) {
+    setTasks(tasks.map(task => 
+      task.id === id ? { ...task, completed: !task.completed } : task
+    ));
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 p-4">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <header className="mb-8 text-center">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-blue-600 flex items-center justify-center relative shadow-lg">
+            <span className="text-white font-bold text-xl">Ai</span>
+            <div className="absolute -bottom-1 left-3 w-3 h-3 bg-blue-600 transform rotate-45"></div>
           </div>
-        </section>
-
-        {/* Completed Tasks */}
-        {completedTasks.length > 0 && (
-          <section>
-            <button
-              onClick={() => setShowCompleted(!showCompleted)}
-              className="w-full flex items-center justify-between p-4 rounded-2xl bg-white dark:bg-slate-800 shadow-md ring-1 ring-slate-200 dark:ring-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-all mb-4"
+          <h1 className="text-3xl font-bold text-slate-900 mb-2">
+            TaskFlow <span className="text-slate-600">by</span> <span className="text-blue-600">Ai Concierge</span>
+          </h1>
+          <p className="text-slate-600">Professional task management platform</p>
+        </header>
+        
+        {/* Add Task */}
+        <div className="bg-white rounded-2xl shadow-xl p-6 mb-6">
+          <h3 className="text-lg font-semibold mb-4">Add New Task</h3>
+          <div className="flex gap-3">
+            <input 
+              type="text" 
+              placeholder="Enter a new task..."
+              className="flex-1 px-4 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              value={newTask}
+              onChange={(e) => setNewTask(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && addTask()}
+            />
+            <button 
+              onClick={addTask}
+              className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium"
             >
-              <div className="flex items-center gap-3">
-                <FolderCheck className="h-5 w-5" style={{ color: accentColors[600] }} />
-                <span className="font-semibold">Completed Tasks</span>
-                <span className="text-sm text-slate-500 dark:text-slate-400">
-                  {completedTasks.length}
+              Add Task
+            </button>
+          </div>
+        </div>
+
+        {/* Task List */}
+        <div className="bg-white rounded-2xl shadow-xl p-6">
+          <h2 className="text-xl font-semibold mb-4">Your Tasks ({tasks.length})</h2>
+          <div className="space-y-3">
+            {tasks.map(task => (
+              <div key={task.id} className="flex items-center gap-3 p-4 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors">
+                <button 
+                  onClick={() => toggleTask(task.id)}
+                  className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
+                    task.completed 
+                      ? 'bg-blue-600 border-blue-600 text-white' 
+                      : 'border-slate-300 hover:border-blue-400'
+                  }`}
+                >
+                  {task.completed && '✓'}
+                </button>
+                <div className="flex-1">
+                  <span className={`font-medium ${task.completed ? 'line-through text-slate-500' : 'text-slate-900'}`}>
+                    {task.title}
+                  </span>
+                </div>
+                <span className={`text-xs px-3 py-1 rounded-full font-medium ${
+                  task.priority === 'High' ? 'bg-red-100 text-red-700' :
+                  task.priority === 'Medium' ? 'bg-amber-100 text-amber-700' :
+                  'bg-green-100 text-green-700'
+                }`}>
+                  {task.priority}
                 </span>
               </div>
-              <span className="text-sm text-slate-500 dark:text-slate-400">
-                {showCompleted ? 'Hide' : 'Show'}
-              </span>
-            </button>
-
-            <AnimatePresence>
-              {showCompleted && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  className="overflow-hidden"
-                >
-                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {completedTasks.map(task => (
-                      <div
-                        key={task.id}
-                        className="rounded-2xl bg-white dark:bg-slate-800 shadow-md ring-1 ring-slate-200 dark:ring-slate-700 p-5 opacity-75"
-                      >
-                        <div className="flex items-start gap-3">
-                          <CheckCircle2 className="h-5 w-5 mt-1 shrink-0" style={{ color: accentColors[600] }} />
-                          <div className="flex-1">
-                            <h3 className="font-semibold text-slate-900 dark:text-slate-100 line-through">
-                              {task.title}
-                            </h3>
-                            {task.notes && (
-                              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                                {task.notes}
-                              </p>
-                            )}
-                            <div className="flex items-center gap-2 mt-3">
-                              <button
-                                onClick={() => toggleComplete(task.id)}
-                                className="text-xs text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
-                              >
-                                Restore
-                              </button>
-                              <button
-                                onClick={() => removeTask(task.id)}
-                                className="text-xs text-red-600 hover:text-red-700"
-                              >
-                                Delete
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </section>
-        )}
+            ))}
+          </div>
+        </div>
 
         {/* Footer */}
         <footer className="mt-12 text-center">
-          <div className="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-white dark:bg-slate-800 shadow-sm ring-1 ring-slate-200 dark:ring-slate-700">
-            <div className="w-6 h-6 rounded-lg bg-blue-600 flex items-center justify-center relative overflow-hidden">
-              <div className="absolute bottom-0 left-1 w-1.5 h-1.5 bg-blue-600 transform rotate-45 translate-y-0.5"></div>
-              <span className="relative text-white font-bold text-xs">Ai</span>
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white shadow-sm">
+            <div className="w-6 h-6 rounded bg-blue-600 flex items-center justify-center">
+              <span className="text-white font-bold text-xs">Ai</span>
             </div>
-            <span className="text-xs text-slate-600 dark:text-slate-400">
-              Powered by <span className="font-medium text-blue-600 dark:text-blue-400">Ai Concierge</span>
+            <span className="text-xs text-slate-600">
+              Powered by <span className="font-medium text-blue-600">Ai Concierge</span>
             </span>
           </div>
         </footer>
@@ -172,594 +117,4 @@
   );
 }
 
-// Render the app
-ReactDOM.render(<TaskFlowApp />, document.getElementById('root'));const { useState, useEffect, useMemo } = React;
-const { motion, AnimatePresence } = Motion;
-const { 
-  Plus, Trash2, CalendarDays, Clock, CheckCircle2, Circle, Search, Filter,
-  Edit2, X, FolderCheck, ArrowRightLeft, Sun, Moon, Monitor, Target
-} = lucide;
-
-const PROFESSIONAL_ACCENTS = {
-  azure: { 
-    50: "#eff6ff", 100: "#dbeafe", 500: "#3b82f6", 600: "#2563eb", 700: "#1d4ed8",
-    gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"
-  },
-  emerald: { 
-    50: "#ecfdf5", 100: "#d1fae5", 500: "#10b981", 600: "#059669", 700: "#047857",
-    gradient: "linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)"
-  },
-  violet: { 
-    50: "#f5f3ff", 100: "#ede9fe", 500: "#8b5cf6", 600: "#7c3aed", 700: "#6d28d9",
-    gradient: "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)"
-  },
-  amber: { 
-    50: "#fffbeb", 100: "#fef3c7", 500: "#f59e0b", 600: "#d97706", 700: "#b45309",
-    gradient: "linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)"
-  },
-  rose: { 
-    50: "#fdf2f8", 100: "#fce7f3", 500: "#ec4899", 600: "#db2777", 700: "#be185d",
-    gradient: "linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)"
-  }
-};
-
-const PROFESSIONAL_TAGS = [
-  { name: "Strategy", color: "violet" },
-  { name: "Business", color: "azure" },
-  { name: "Personal", color: "rose" },
-  { name: "Urgent", color: "rose" },
-  { name: "Research", color: "emerald" },
-  { name: "Content", color: "amber" }
-];
-
-const PRIORITY_CONFIG = {
-  Critical: { color: "rose", weight: 0 },
-  High: { color: "amber", weight: 1 },
-  Medium: { color: "azure", weight: 2 },
-  Low: { color: "emerald", weight: 3 }
-};
-
-function classNames(...classes) {
-  return classes.filter(Boolean).join(' ');
-}
-
-function isToday(dateStr) {
-  if (!dateStr) return false;
-  const d = new Date(dateStr);
-  const now = new Date();
-  return d.toDateString() === now.toDateString();
-}
-
-function isOverdue(dateStr) {
-  if (!dateStr) return false;
-  return new Date(dateStr) < new Date();
-}
-
-function TaskFlowApp() {
-  // Sample data with localStorage
-  const [store, setStore] = useState(() => {
-    try {
-      const saved = localStorage.getItem('taskflow-data');
-      return saved ? JSON.parse(saved) : {
-        personal: [
-          {
-            id: "1",
-            title: "Review quarterly budget proposals",
-            notes: "Focus on marketing and R&D allocations for next quarter",
-            deadline: "2024-01-15T14:00",
-            priority: "High",
-            tag: "Business",
-            completed: false,
-            createdAt: new Date().toISOString()
-          },
-          {
-            id: "2", 
-            title: "Plan team building retreat",
-            notes: "Research venues and activities for 25 people. Budget: $15k",
-            deadline: "2024-01-20T10:00",
-            priority: "Medium",
-            tag: "Strategy",
-            completed: false,
-            createdAt: new Date().toISOString()
-          }
-        ], 
-        work: [
-          {
-            id: "3",
-            title: "Complete API documentation",
-            notes: "Update developer guides and code examples",
-            deadline: "2024-01-12T17:00", 
-            priority: "Critical",
-            tag: "Content",
-            completed: false,
-            createdAt: new Date().toISOString()
-          }
-        ]
-      };
-    } catch {
-      return { personal: [], work: [] };
-    }
-  });
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('taskflow-data', JSON.stringify(store));
-    } catch {}
-  }, [store]);
-
-  const [tab, setTab] = useState("Personal");
-  const [accent, setAccent] = useState("azure");
-  const [mode, setMode] = useState("system");
-  const [isDark, setIsDark] = useState(false);
-  
-  const [draft, setDraft] = useState({
-    id: "", title: "", notes: "", deadline: "", priority: "Medium", 
-    tag: "Strategy", completed: false, createdAt: ""
-  });
-  const [editingId, setEditingId] = useState(null);
-  const [query, setQuery] = useState("");
-  const [filter, setFilter] = useState("All");
-  const [showCompleted, setShowCompleted] = useState(false);
-
-  // Theme management
-  useEffect(() => {
-    const updateTheme = () => {
-      try {
-        const mq = window.matchMedia('(prefers-color-scheme: dark)');
-        const systemDark = mq?.matches || false;
-        
-        if (mode === 'dark') {
-          setIsDark(true);
-        } else if (mode === 'light') {
-          setIsDark(false);
-        } else {
-          setIsDark(systemDark);
-        }
-      } catch {
-        setIsDark(false);
-      }
-    };
-    updateTheme();
-  }, [mode]);
-
-  useEffect(() => {
-    try {
-      document.documentElement.classList.toggle('dark', isDark);
-    } catch {}
-  }, [isDark]);
-
-  const tasks = tab === "Personal" ? store.personal : store.work;
-  const activeTasks = tasks.filter(t => !t.completed);
-  const completedTasks = tasks.filter(t => t.completed);
-
-  const tabCounts = {
-    personal: store.personal.filter(t => !t.completed).length,
-    work: store.work.filter(t => !t.completed).length,
-  };
-
-  const visibleActive = useMemo(() => {
-    let list = [...activeTasks];
-    
-    if (filter === "Today") list = list.filter(t => isToday(t.deadline));
-    if (filter === "Overdue") list = list.filter(t => isOverdue(t.deadline));
-    if (filter.startsWith("Priority:")) {
-      const priority = filter.replace("Priority:", "");
-      list = list.filter(t => t.priority === priority);
-    }
-    if (filter.startsWith("Tag:")) {
-      const tag = filter.replace("Tag:", "");
-      list = list.filter(t => t.tag === tag);
-    }
-
-    if (query) {
-      const q = query.toLowerCase();
-      list = list.filter(t =>
-        t.title.toLowerCase().includes(q) ||
-        t.notes.toLowerCase().includes(q) ||
-        t.tag.toLowerCase().includes(q)
-      );
-    }
-
-    list.sort((a, b) => {
-      const aOver = isOverdue(a.deadline) ? 1 : 0;
-      const bOver = isOverdue(b.deadline) ? 1 : 0;
-      if (aOver !== bOver) return bOver - aOver;
-      
-      const aPriority = PRIORITY_CONFIG[a.priority]?.weight || 999;
-      const bPriority = PRIORITY_CONFIG[b.priority]?.weight || 999;
-      return aPriority - bPriority;
-    });
-
-    return list;
-  }, [activeTasks, filter, query]);
-
-  function updateTasks(updater) {
-    setStore(prev => {
-      const current = tab === "Personal" ? prev.personal : prev.work;
-      const next = typeof updater === "function" ? updater(current) : updater;
-      return tab === "Personal" ? { ...prev, personal: next } : { ...prev, work: next };
-    });
-  }
-
-  function resetDraft() {
-    setDraft({
-      id: crypto.randomUUID(), title: "", notes: "", deadline: "", 
-      priority: "Medium", tag: "Strategy", completed: false, createdAt: new Date().toISOString()
-    });
-    setEditingId(null);
-  }
-
-  function saveTask(e) {
-    e?.preventDefault();
-    if (!draft.title.trim()) return;
-    
-    if (editingId) {
-      updateTasks(prev => prev.map(t => t.id === editingId ? { ...draft } : t));
-    } else {
-      updateTasks(prev => [{ ...draft }, ...prev]);
-    }
-    resetDraft();
-  }
-
-  function toggleComplete(id) {
-    updateTasks(prev => prev.map(t => t.id === id ? { ...t, completed: !t.completed } : t));
-  }
-
-  function removeTask(id) { 
-    updateTasks(prev => prev.filter(t => t.id !== id)); 
-  }
-
-  function startEdit(task) { 
-    setEditingId(task.id); 
-    setDraft(task); 
-  }
-
-  function moveTask(id, destinationTab) {
-    setStore(prev => {
-      const sourceKey = tab === "Personal" ? "personal" : "work";
-      const destKey = destinationTab === "Personal" ? "personal" : "work";
-      if (sourceKey === destKey) return prev;
-      
-      const sourceList = [...prev[sourceKey]];
-      const idx = sourceList.findIndex(t => t.id === id);
-      if (idx === -1) return prev;
-      
-      const [task] = sourceList.splice(idx, 1);
-      const destList = [task, ...prev[destKey]];
-      return { ...prev, [sourceKey]: sourceList, [destKey]: destList };
-    });
-    
-    if (editingId === id) resetDraft();
-  }
-
-  const accentColors = PROFESSIONAL_ACCENTS[accent];
-  const accentStyle = {
-    "--accent-50": accentColors[50],
-    "--accent-100": accentColors[100],
-    "--accent-500": accentColors[500],
-    "--accent-600": accentColors[600],
-    "--accent-gradient": accentColors.gradient,
-  };
-
-  const filters = [
-    "All", "Today", "Overdue", 
-    ...Object.keys(PRIORITY_CONFIG).map(p => `Priority:${p}`),
-    ...PROFESSIONAL_TAGS.map(t => `Tag:${t.name}`)
-  ];
-
-  return (
-    <div 
-      style={accentStyle} 
-      className={classNames(
-        "min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-900 dark:via-slate-900 dark:to-slate-800 text-slate-900 dark:text-slate-100",
-        isDark && "dark"
-      )}
-    >
-      <div className="mx-auto max-w-7xl px-4 py-6">
-        {/* Header */}
-        <motion.header 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="sticky top-0 z-20 -mx-2 mb-8 px-2"
-        >
-          <div className="rounded-2xl bg-white/90 dark:bg-slate-800/90 backdrop-blur-xl shadow-xl ring-1 ring-slate-200/50 dark:ring-slate-700/50">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-6 py-4">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-blue-600 shadow-lg flex items-center justify-center relative">
-                  <div className="w-10 h-8 bg-blue-600 rounded-2xl flex items-center justify-center relative">
-                    <span className="text-white font-bold text-sm">Ai</span>
-                  </div>
-                  <div className="absolute -bottom-1 left-2 w-2 h-2 bg-blue-600 transform rotate-45"></div>
-                </div>
-                <div>
-                  <h1 className="text-2xl font-bold tracking-tight">
-                    TaskFlow 
-                    <span className="ml-2 text-lg font-normal text-slate-600 dark:text-slate-400">by</span>
-                    <span className="ml-1 text-blue-600 dark:text-blue-400 font-semibold">Ai Concierge</span>
-                  </h1>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">
-                    Professional task management platform
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-4">
-                {/* Accent colors */}
-                <div className="flex items-center gap-2">
-                  {Object.entries(PROFESSIONAL_ACCENTS).map(([key, colors]) => (
-                    <button
-                      key={key}
-                      onClick={() => setAccent(key)}
-                      className={classNames(
-                        "w-6 h-6 rounded-full ring-2 ring-offset-2 ring-offset-white dark:ring-offset-slate-800 transition-all hover:scale-110",
-                        accent === key ? "ring-slate-400" : "ring-transparent"
-                      )}
-                      style={{ background: colors.gradient }}
-                      title={`${key} theme`}
-                    />
-                  ))}
-                </div>
-
-                {/* Theme switcher */}
-                <div className="flex items-center rounded-lg bg-slate-100 dark:bg-slate-700 p-1">
-                  {[
-                    { key: 'light', label: 'Light', Icon: Sun },
-                    { key: 'dark', label: 'Dark', Icon: Moon },
-                    { key: 'system', label: 'Auto', Icon: Monitor }
-                  ].map(({ key, label, Icon }) => (
-                    <button
-                      key={key}
-                      onClick={() => setMode(key)}
-                      className={classNames(
-                        "flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all",
-                        mode === key 
-                          ? "bg-white dark:bg-slate-600 shadow-sm text-slate-900 dark:text-slate-100"
-                          : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
-                      )}
-                    >
-                      <Icon className="h-4 w-4" />
-                      <span className="hidden sm:inline">{label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Tabs */}
-            <div className="px-6 pb-4">
-              <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-700 rounded-xl max-w-fit">
-                {["Personal", "Work"].map((name) => {
-                  const active = tab === name;
-                  const count = name === "Personal" ? tabCounts.personal : tabCounts.work;
-                  return (
-                    <button
-                      key={name}
-                      onClick={() => setTab(name)}
-                      className={classNames(
-                        "flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all",
-                        active 
-                          ? "bg-white dark:bg-slate-600 shadow-sm text-slate-900 dark:text-slate-100"
-                          : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100"
-                      )}
-                    >
-                      {name}
-                      <span className={classNames(
-                        "inline-flex items-center justify-center w-5 h-5 text-xs rounded-full",
-                        active 
-                          ? "bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300"
-                          : "bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-400"
-                      )}>
-                        {count}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </motion.header>
-
-        {/* Progress Cards */}
-        <div className="grid sm:grid-cols-2 gap-4 mb-8">
-          {[
-            { label: 'Active Tasks', count: activeTasks.length, icon: Target },
-            { label: 'Completed', count: completedTasks.length, icon: CheckCircle2 }
-          ].map(({ label, count, icon: Icon }) => (
-            <motion.div 
-              key={label}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="rounded-2xl bg-white dark:bg-slate-800 shadow-lg ring-1 ring-slate-200 dark:ring-slate-700 p-6"
-            >
-              <div className="flex items-center gap-3">
-                <div className="p-3 rounded-xl" style={{ backgroundColor: accentColors[100] }}>
-                  <Icon className="h-6 w-6" style={{ color: accentColors[600] }} />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-slate-900 dark:text-slate-100">{label}</h3>
-                  <p className="text-2xl font-bold" style={{ color: accentColors[600] }}>{count}</p>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Task Form */}
-        <motion.form
-          layout
-          onSubmit={saveTask}
-          className="mb-8 rounded-2xl bg-white dark:bg-slate-800 shadow-xl ring-1 ring-slate-200 dark:ring-slate-700 p-6"
-        >
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-            <div className="lg:col-span-5">
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Task Title
-              </label>
-              <input
-                className="w-full rounded-xl border-slate-300 dark:border-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-sm px-4 py-3 bg-white dark:bg-slate-900 transition-all"
-                placeholder={`e.g., ${tab === "Personal" ? "Plan weekend getaway" : "Prepare quarterly presentation"}`}
-                value={draft.title}
-                onChange={(e) => setDraft({ ...draft, title: e.target.value })}
-              />
-            </div>
-            
-            <div className="lg:col-span-3">
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Due Date
-              </label>
-              <input
-                type="datetime-local"
-                className="w-full rounded-xl border-slate-300 dark:border-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-sm px-4 py-3 bg-white dark:bg-slate-900"
-                value={draft.deadline}
-                onChange={(e) => setDraft({ ...draft, deadline: e.target.value })}
-              />
-            </div>
-
-            <div className="lg:col-span-2">
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Priority
-              </label>
-              <select
-                className="w-full rounded-xl border-slate-300 dark:border-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-sm px-4 py-3 bg-white dark:bg-slate-900"
-                value={draft.priority}
-                onChange={(e) => setDraft({ ...draft, priority: e.target.value })}
-              >
-                {Object.keys(PRIORITY_CONFIG).map(p => (
-                  <option key={p}>{p}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="lg:col-span-2">
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Category
-              </label>
-              <select
-                className="w-full rounded-xl border-slate-300 dark:border-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-sm px-4 py-3 bg-white dark:bg-slate-900"
-                value={draft.tag}
-                onChange={(e) => setDraft({ ...draft, tag: e.target.value })}
-              >
-                {PROFESSIONAL_TAGS.map(t => (
-                  <option key={t.name}>{t.name}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="lg:col-span-12">
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Notes
-              </label>
-              <textarea
-                rows={3}
-                className="w-full rounded-xl border-slate-300 dark:border-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 text-sm px-4 py-3 bg-white dark:bg-slate-900"
-                placeholder="Add any additional details..."
-                value={draft.notes}
-                onChange={(e) => setDraft({ ...draft, notes: e.target.value })}
-              />
-            </div>
-          </div>
-
-          <div className="mt-6 flex items-center gap-3">
-            <button
-              type="submit"
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-white font-medium shadow-lg hover:shadow-xl active:scale-95 transform transition-all duration-200"
-              style={{ background: accentColors.gradient }}
-            >
-              {editingId ? (
-                <>
-                  <Edit2 className="h-4 w-4" />
-                  Update Task
-                </>
-              ) : (
-                <>
-                  <Plus className="h-4 w-4" />
-                  Add Task
-                </>
-              )}
-            </button>
-            
-            {editingId && (
-              <button
-                type="button"
-                onClick={resetDraft}
-                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 ring-1 ring-slate-300 dark:ring-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition-all"
-              >
-                <X className="h-4 w-4" />
-                Cancel
-              </button>
-            )}
-          </div>
-        </motion.form>
-
-        {/* Search and Filters */}
-        <div className="mb-6 flex flex-col sm:flex-row gap-4">
-          <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-            <input
-              className="w-full pl-10 pr-4 py-3 rounded-xl border-slate-300 dark:border-slate-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 bg-white dark:bg-slate-900"
-              placeholder="Search tasks..."
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-            />
-          </div>
-          <div className="flex items-center gap-2 overflow-x-auto">
-            <Filter className="h-4 w-4 text-slate-400 shrink-0" />
-            {filters.map(f => (
-              <button
-                key={f}
-                onClick={() => setFilter(f)}
-                className={classNames(
-                  "px-4 py-2 text-sm rounded-full whitespace-nowrap transition-all",
-                  filter === f
-                    ? "text-white shadow-lg"
-                    : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 ring-1 ring-slate-200 dark:ring-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700"
-                )}
-                style={filter === f ? { background: accentColors.gradient } : undefined}
-              >
-                {f}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Tasks */}
-        <section className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100">
-              Active Tasks
-            </h2>
-            <span className="text-sm text-slate-600 dark:text-slate-400">
-              {visibleActive.length} of {activeTasks.length} tasks
-            </span>
-          </div>
-
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <AnimatePresence mode="popLayout">
-              {visibleActive.map(task => (
-                <motion.div
-                  key={task.id}
-                  layout
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  whileHover={{ y: -2 }}
-                  className="group relative rounded-2xl bg-white dark:bg-slate-800 shadow-md hover:shadow-lg transition-all duration-300 ring-1 ring-slate-200 dark:ring-slate-700 overflow-hidden"
-                >
-                  <div 
-                    className="absolute top-0 left-0 right-0 h-1"
-                    style={{ 
-                      background: PROFESSIONAL_ACCENTS[PRIORITY_CONFIG[task.priority].color].gradient 
-                    }}
-                  />
-
-                  <div className="p-5">
-                    <div className="flex items-start gap-3">
-                      <button 
-                        onClick={() => toggleComplete(task.id)} 
-                        className="mt-1 shrink-0 transition-transform hover:scale-110"
-                      >
-                        <Circle className="h-5 w-5 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300" />
-                      </button>
-                      
-                      <div className="flex-1 min-w-0">
-                        <div
+ReactDOM.render(<TaskFlowApp />, document.getElementById('root'));
